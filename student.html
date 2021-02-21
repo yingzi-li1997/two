@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <script src="./jquery.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .header{
+            margin-left: 200px;
+            width:500px;
+            height: 30px;
+            border:1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            border:0;
+            margin-top: 20px;
+        }
+        .inp{
+            width:350px;
+            height: 26px;
+           
+        }
+        .search{
+            width:50px;
+            height: 26px;
+            background: skyblue;
+            text-align: center;
+            line-height: 30px;
+        }
+       button{
+           margin-left: 20px;
+           width:100px;
+           height: 30px;
+           border:0;
+          border-radius: 5px;
+       }
+    </style>
+</head>
+<body>
+   <div class="header">
+       <input type="text" class="inp">
+       <span class="search"><span class="glyphicon glyphicon-search"></span></span>
+       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" style="float: left;margin-left: 50px;">增加按钮</button>
+   </div>
+  <div class="container">
+      <div class="row">
+          <!-- 页面展示 -->
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>电话</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>11</td>
+                <td>shao</td>
+                <td>2968687993@qq.com</td>
+                <td>15552147766</td>
+                <td>
+                  <span class="glyphicon glyphicon-pencil update" id=${item._id} data-toggle="modal" data-target="#myModal1" onclick='edit(this)'></span>
+                  <span class="glyphicon glyphicon-trash" id=${item._id} onclick='del(this)'></span>
+                </td>
+              </tr>
+            </tbody>
+        </table>
+      </div>
+<!-- 增加模态框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">添加用户</h4>
+            </div>
+            <div class="modal-body">
+                用户名: <input type="text" class="username"><br/><br/>
+                密码:&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" class="pass"><br/><br/>
+                邮箱:&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" class="email"><br/><br/>
+                电话:&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" class="phone">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="add" data-dismiss="modal">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 修改模态框 -->
+<div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h4 class="modal-title" id="myModalLabel">添加用户</h4>
+          </div>
+          <div class="modal-body">
+              用户名: <input type="text" class="username1"><br/><br/>
+              邮箱:&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" class="email1"><br/><br/>
+              电话:&nbsp;&nbsp;&nbsp;&nbsp; <input type="text" class="phone1">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+              <button type="button" class="btn btn-primary" id="confirm" data-dismiss="modal">确认修改</button>
+          </div>
+      </div>
+  </div>
+</div>
+  </div>
+</body>
+
+<script>
+// 添加用户
+$("#add").on("click",function(){
+  $.get("http://localhost:7070/add",{
+      username:$(".username").val(),
+      password:$(".password").val(),
+      email:$(".email").val(),
+      phone:$(".phone").val()
+  },function(res){
+      console.log(res);
+      if(status==1){
+          show()
+      }
+  })
+})
+function show(){
+  $("tbody").empty()
+  $.get("http://localhost:7070/show",{},function(res){
+    // $.each(res,(index,item)=>)
+    res.forEach(item=>{
+      $("<tr/>").html(`
+      <td>${item._id}</td>
+      <td>${item.username}</td>
+      <td>${item.email}</td>
+      <td>${item.phone}</td>
+      <td>
+        <span class="glyphicon glyphicon-pencil update" id=${item._id} data-toggle="modal" data-target="#myModal1" onclick='edit(this)'></span>
+       <span class="glyphicon glyphicon-trash" id=${item._id} onclick='del(this)'></span>
+      </td>
+      `).appendTo($("tbody"))
+    })
+  })
+}
+show()
+// 删除
+function del(ele){
+  let id=$(ele).attr("id");
+  $.post("http://localhost:7070/del",{
+    id
+  },function(res){
+    res.status==1?show():null
+  })
+}
+//修改
+function edit(ele){
+  let id=$(ele).attr("id");
+  localStorage.setItem("id",id)
+  $.get("http://localhost:7070/edit",{
+    id
+  },function(res){
+    console.log(res);
+    // console.log($(".username1"));
+    $(".username1").val(res[0].username)
+    $(".email1").val(res[0].email)
+    $(".phone1").val(res[0].phone)
+    console.log($(".username1").val(res[0].username));
+  })
+}
+// 确认修改
+$("#confirm").on("click",function(){
+  let id = localStorage.getItem("id");
+  let username=$(".username1").val()
+  let email=$(".email1").val();
+  let phone=$(".phone1").val();
+  $.ajax({
+    type:"get",
+    url:"http://localhost:7070/confirm",
+    data:{
+     username,id,email,phone
+    },
+    success(res){
+      res.status==1?show():null;
+    }
+  })
+})
+// 搜索
+$(".search").on("click",function(){
+  let ssText=$(".inp").val();
+  console.log(ssText);
+  $.get("http://localhost:7070/show",{},function(res){
+    let newArr=res.filter(item=>{
+      return ssText==item.username;
+    })
+    $("tbody").empty()
+    $("<tr/>").html(`
+    <td>${newArr[0]._id}</td>
+    <td>${newArr[0].username}</td>
+    <td>${newArr[0].email}</td>
+    <td>${newArr[0].phone}</td>
+     <td>
+      <span class="glyphicon glyphicon-pencil update" id=${newArr[0]._id} data-toggle="modal" data-target="#myModal1" onclick='edit(this)'></span>
+     <span class="glyphicon glyphicon-trash" id=${newArr[0]._id} onclick='del(this)'></span>
+    </td>
+    `).appendTo($("tbody"))
+  })
+})
+</script>
+</html>
